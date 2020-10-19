@@ -1,0 +1,156 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core">
+
+<ui:composition >
+	<ui:define name="content">
+		<h:form id="formTicket">
+			<p:tabView id="tab">
+				<p:tab
+					title="#{msgs['ec.gestion.ticket.titulo']}">
+					<p:growl id="growl" autoUpdate="true" life="8000" />
+					<center>
+					<p:panel id="horizontal" header="#{msgs['ec.gestion.ticket.detalle.ticket']}"
+							toggleable="true" style="width:700px">
+						<h:outputLabel style="font-weight: bold"
+							value="#{msgs['ec.gestion.ticket.nuevo']}"
+							rendered="#{!ticketBean.editarTicket}" />
+						<h:outputLabel style="font-weight: bold"
+							value="#{msgs['ec.gestion.ticket.editar']}"
+							rendered="#{ticketBean.editarTicket}" />
+						<br /> <br />
+
+						<h:panelGrid columns="4" cellpadding="7">
+
+							<h:outputLabel class="label"
+										   value="#{msgs['ec.gestion.ticket.descripcion']}" />
+							<p:outputPanel>
+								<p:inputText id="descripcion" styleClass="lblbtn" size="20"
+											 value="#{ticketBean.nuevoTicket.descripcion}" required="true"
+											 requiredMessage="#{msgs['ec.gestion.ticket.descripcion.msg']}" />
+								<h:outputText value=" *" style="color: red" />
+							</p:outputPanel>
+
+							<h:outputLabel class="label"
+										   value="#{msgs['ec.gestion.ticket.prioridad']}" />
+							<p:outputPanel>
+								<p:selectOneButton value="#{ticketBean.prioridad}"
+												   required="true"
+												   requiredMessage="#{msgs['ec.gestion.ticket.prioridad.msg']}">
+									<f:selectItem
+											itemLabel="#{msgs['ec.gestion.ticket.prioridad.alta']}"
+											itemValue="1" />
+									<f:selectItem
+											itemLabel="#{msgs['ec.gestion.ticket.prioridad.baja']}"
+											itemValue="2" />
+									<p:ajax listener="#{ticketBean.obligatorio}"
+											update=":formTicket:tab" />
+								</p:selectOneButton>
+								<h:outputText value=" *" style="color: red" />
+							</p:outputPanel>
+						</h:panelGrid>
+							
+						<br /> <br />
+						<div align="center">
+							<p:commandButton value="#{msgs['guardar']}"
+								action="#{ticketBean.editarTicket}"
+								rendered="#{ticketBean.editarTicket}" update=":formTicket"
+								process="@all" icon="ui-icon-disk" />
+							<p:commandButton value="#{msgs['guardar']}" icon="ui-icon-disk"
+								action="#{ticketBean.guardar}" update=":formTicket" process="@all"
+								rendered="#{!ticketBean.editarTicket}" />
+							<p:commandButton value="#{msgs['cancelar']}" process="@this"
+								action="#{ticketBean.iniciar}" update=":formTicket"
+								styleClass="btnClic" icon="ui-icon-close" />
+						</div>
+						 <br />
+				</p:panel>
+						<br /> <br />
+						<p:dataTable id="tblTicket" var="ticket" value="#{ticketBean.listaTicket}"
+							widgetVar="datatableTicketWidget"
+							emptyMessage="#{msgs['ec.gestion.ticket.tabla.vacia']}"
+							tableStyle="width:100%; table-layout: auto; font-size: 11px;"
+							process="@this"
+							paginator="true" rows="10" rowsPerPageTemplate="10,20,30,50" >
+							<p:column
+								headerText="#{msgs['ec.gestion.ticket.tabla.cod.ticket']}"
+								style="width:100px" filterBy="#{ticket.codTicket}"
+								filterMatchMode="contains" filterStyle="width:80px">
+								<h:outputText value="#{ticket.codTicket}" />
+							</p:column>
+
+							<p:column
+									headerText="#{msgs['ec.gestion.ticket.tabla.descripcion']}"
+									style="width:100px" filterBy="#{ticket.descripcion}"
+									filterMatchMode="contains" filterStyle="width:80px">
+									<h:outputText value="#{ticket.descripcion}" />
+							</p:column>
+
+							<p:column
+									headerText="#{msgs['ec.gestion.ticket.tabla.estado']}"
+									style="width:100px" filterBy="#{ticket.estado}"
+									filterMatchMode="contains" filterStyle="width:80px">
+								<h:outputText value="#{ticket.estado}" />
+							</p:column>
+
+							<p:column
+									headerText="#{msgs['ec.gestion.ticket.tabla.prioridad']}"
+									style="width:100px" filterBy="#{ticket.prioridad}"
+									filterMatchMode="contains" filterStyle="width:80px">
+								<h:outputText value="#{ticket.prioridad}" />
+							</p:column>
+
+							<p:column
+									headerText="#{msgs['ec.gestion.ticket.tabla.usuario.registro']}"
+									style="width:100px" filterBy="#{ticket.usuarioRegistro}"
+									filterMatchMode="contains" filterStyle="width:80px">
+								<h:outputText value="#{ticket.usuarioRegistro}" />
+							</p:column>
+
+							<p:column
+									headerText="#{msgs['ec.gestion.ticket.tabla.fecha']}"
+									style="width:100px">
+								<h:outputText value="#{ticket.fecha}" />
+							</p:column>
+
+							<p:column headerText="#{msgs['editar']}">
+								<p:commandButton id="cbEditar" icon="ui-icon-pencil"
+									update=":formTicket" process="@this"
+									action="#{ticketBean.editarTicket(ticket)}" />
+								<p:tooltip for="cbEditar" value="Editar #{ticket.descripcion}"
+									showEffect="fade" hideEffect="fade" />
+							</p:column>
+
+							<p:column headerText="#{msgs['eliminar']}" styleClass="classBtn">
+								<p:commandButton id="cbEliminar" icon="ui-icon-trash"
+									update=":formTicket" process="@this"
+									actionListener="#{ticketBean.seleccionarTicket(ticket)}"
+									oncomplete="PF('dlgEliminar').show()" />
+								<p:tooltip for="cbEliminar"
+									value="#{msgs['ec.gestion.ticket.msg.eliminar']} #{ticket.descripcion}"
+									showEffect="fade" hideEffect="fade" />
+							</p:column>
+
+						</p:dataTable>
+
+						<p:confirmDialog id="cdEliminar"
+							message="#{msgs['ec.gestion.ticket.confir.eliminar']} #{msgs['signo.interrogacion']}"
+							header="#{msgs['ec.gestion.ticket.msg.eliminar']} #{ticketBean.eliminarTicket.descripcion}"
+							severity="alert" widgetVar="dlgEliminar">
+							<p:commandButton value="#{msgs['opcion.si']}" update=":formTicket"
+								oncomplete="PF('dlgEliminar').hide()" process="@this"
+								actionListener="#{ticketBean.eliminarTicket()}" />
+							<p:commandButton value="#{msgs['opcion.no']}" update=":formTicket"
+								onclick="PF('dlgEliminar').hide()" type="button" process="@this" />
+						</p:confirmDialog>
+
+					</center>
+				</p:tab>
+			</p:tabView>
+		</h:form>
+	</ui:define>
+</ui:composition>
+
+</html>
